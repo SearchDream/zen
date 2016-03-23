@@ -19,7 +19,7 @@
 - [3.函数](#3)
 - [4.类与初始化(Initializers)](#4)
 - [5.枚举与结构体](#5)
-- [6.协议(Protocols)](#6)
+- [6.协议(Protocols)与扩展(Extensions)](#6)
 - [7.Swift与Cocoa](#7)
 - [8.总结](#8)
 
@@ -57,7 +57,7 @@ class Shape {
 	weak var delegate: UITextFieldDelegate? 
 	~~~
 	
-- `readonly`,`readwrie`  直接通过声明变量`var`,声明常量`let`的方式来指明
+- `readonly`,`readwrie`  直接通过声明常量`let`,声明变量`var`的方式来指明
 - `copy` 通过`@NSCopying`指令声明。 
 
 	**值得注意的是String,Array和Dictionary在Swift是以值类型(value type)而不是引用类型(reference type)出现,因此它们在赋值,初始化,参数传递中都是以拷贝的方式进行（简单来说,String,Array,Dictionary在Swift中是通过`struct`实现的）** 
@@ -98,7 +98,7 @@ class Shape {
 - `Stored Properties`和`Computed properties`
 
 在Swift中,property被分为两类：`Stored Properties`和`Computed properties`
-简单来说,就是stored properties 能够保存值,而conmuted properties只提供getter与setter,利用stored properties来生成自己的值。个人感觉Computed properties更像方法,而不是传统意义的属性。但是这样一个特性存在,使得我们更容易组织我们的代码。
+简单来说,就是stored properties 能够保存值,而computed properties只提供getter与setter,利用stored properties来生成自己的值。个人感觉Computed properties更像方法,而不是传统意义的属性。但是这样一个特性存在,使得我们更容易组织我们的代码。
 
 延伸阅读：[computed property vs function](http://stackoverflow.com/questions/24035276/computed-read-only-property-vs-function-in-swift)
 
@@ -262,7 +262,7 @@ if number{
 
 for循环在Swift中变得更方便,更强大。
 
-得益于Swift新添加的范围操作符`...`与`...<`
+得益于Swift新添加的范围操作符`...`与`..<`
 
 我们能够将之前繁琐的for循环：
 
@@ -581,7 +581,9 @@ Swift的初始化方法让我们只关注对象的初始化。之前在OC世界�
 	延伸阅读：[WWDC心得：Advanced iOS Application Architecture and Patterns](https://github.com/100mango/zen/blob/master/WWDC%E5%BF%83%E5%BE%97%EF%BC%9AAdvanced%20iOS%20Application%20Architecture%20and%20Patterns/WWDC%E5%BF%83%E5%BE%97%EF%BC%9AAdvanced%20iOS%20Application%20Architecture%20and%20Patterns.md)
 	
 	
-<h2 id="6">6.协议（Protocols）</h2>
+<h2 id="6">6.协议(Protocols)与扩展(Extensions)</h2>
+
+###协议（Protocol）
 
 语法:
 
@@ -691,7 +693,7 @@ if let thisSementTitle = dataSource?.titleFroSegmentAtIndex?(index){
 	
 	这种编程方式通过怎样的语法特性支撑的呢？
 	
-	那就是我们能够对协议进行扩展,也就是我们能够提供协议的默认实现,能够为协议添加新的方法与实现。
+	那就是我们能够对协议进行扩展(`protocol extensions`),也就是我们能够提供协议的默认实现,能够为协议添加新的方法与实现。
 	
 	用前面的myProtocol为例子,我们在Swift里这样为它提供默认实现。
 	
@@ -711,6 +713,31 @@ if let thisSementTitle = dataSource?.titleFroSegmentAtIndex?(index){
 	
 	[IF YOU'RE SUBCLASSING, YOU'RE DOING IT WRONG.](http://krakendev.io/blog/subclassing-can-suck-and-heres-why)
 	
+###扩展（Extension）
+
+`Extension`在Swift在类似Objective-C的`Category`。在Objective-C中,我们用它来为已有的类添加新的方法实现。在Swift中,我们不仅可以对类进行扩展,而且能对结构体,枚举类型,协议进行扩展。
+
+语法：
+
+Objective-C：
+
+~~~objective-c
+#import "MyClass.h"
+
+@interface MyClass (MyClassAddition)
+- (void)hello;
+@end
+~~~
+
+Swift：
+
+~~~swift
+extension SomeType {
+	func hello(){}
+}
+~~~
+
+与Objective-C的Category不同的是,Swift的`Extension`没有名字。
 
 <h2 id="7">7.Swift与Cocoa</h2>
 

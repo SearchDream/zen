@@ -52,7 +52,7 @@ CoreAnimation的渲染流程可以用下图来概括:
 最后需要关注和有趣的一点是:苹果为我们提供了三个UIBlurEffect styles,   
 分别为Extra light, Light, Dark.但是三者的耗费的资源各为不同。
 
-Extra light耗费最多资源, Light其次, Dark最多。
+Extra light耗费最多资源, Light其次, Dark最少。
 ![](UIVisualEffectView_cost.png)
 
 我在自己的个人项目里也有用到UIBlurEffectView来美化界面,优化用户体验。两个项目都已经上架,并完整开源。欢迎去看看。
@@ -187,7 +187,7 @@ imageViewLayer.shadowPath = CGPathCreateWithRect(imageRect, NULL);
 	![](roundFrameRate.png)
 	
 
- 以上举了两个例子阐明了在避免大量的offerScreen渲染后,性能能够得到非常直观有效的提高。
+ 以上举了两个例子阐明了在避免大量的offerscreen渲染后,性能能够得到非常直观有效的提高。
 
 ###3. 关于blending
 
