@@ -57,8 +57,19 @@ class Shape {
 	weak var delegate: UITextFieldDelegate? 
 	~~~
 	
-- `readonly`,`readwrie`  直接通过声明常量`let`,声明变量`var`的方式来指明
-- `copy` 通过`@NSCopying`指令声明。 
+- `readonly`,`readwrite`：
+
+	Swift没有这两个attribute,如果是定义一个`stored property`,通过`let`定义它只读,通过`var`定义它可读可写。
+	
+	如果想实现类似Objective-C中,对外在头文件.h 声明property为`readonly`，对内在.m声明property为`readwrite`,这种情况在Swift通过`Access Control`来实现:
+	
+	~~~swift
+	private(set) var property: Int
+	~~~
+	
+	关于`Access Control`（在本文[类与初始化(Initializers)](#4)会提到）
+	
+- `copy`：通过`@NSCopying`指令声明。 
 
 	**值得注意的是String,Array和Dictionary在Swift是以值类型(value type)而不是引用类型(reference type)出现,因此它们在赋值,初始化,参数传递中都是以拷贝的方式进行（简单来说,String,Array,Dictionary在Swift中是通过`struct`实现的）** 
 	
@@ -148,6 +159,9 @@ static int value;
   return fooDict;
 }
 ~~~
+
+> 更新：Xcode8 Release Note : Objective-C now supports class properties, which interoperate with Swift type properties. They are
+declared as: @property (class) NSString *someStringProperty;. They are never synthesized.  也就是从Xcode8之后, Objective-C也有了类变量的定义,不过getter和setter都需要我们自己编写。这是一个典型的Swift反推Objective-C发展的例子。
 
 而在Swift中我们通过清晰的语法便能定义类变量：
 
@@ -295,9 +309,9 @@ for index in 1...5 {
 虽然在《The Swift Programming Language》里面没有提到类似的用法,但是在Swift中我们也有优雅的方法办到。
 
 ~~~swift
-for index in stride(from: 1, through: 5, by: 2) {
-    print(index)
-}// through是包括5
+for index in  0.stride(through: 10, by: 2) {
+    print(index) // 0 2 4 6 8 10  
+}
 ~~~
 
 然后对字典的遍历也增强了.在Objective-c的快速枚举中我们只能对字典的键进行枚举。
@@ -671,7 +685,7 @@ if let thisSementTitle = dataSource?.titleFroSegmentAtIndex?(index){
    	 func hello() -> String
 	}
 
-	extension String:myProtocol{
+	extension String: myProtocol{
    	 func hello() -> String {
    	     return "hello world!"
    	 }
@@ -738,6 +752,14 @@ extension SomeType {
 ~~~
 
 与Objective-C的Category不同的是,Swift的`Extension`没有名字。
+
+我们还可以利用该特性来整理代码: 比如将私有方法集合在一起
+
+~~~swift
+private extension ViewController {
+//...私有方法
+}
+~~~
 
 <h2 id="7">7.Swift与Cocoa</h2>
 
