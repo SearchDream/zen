@@ -464,41 +464,8 @@ associatedtype ItemType = String
 		比如我们扩展泛型类型：
 		
 		~~~swift
-		protocol CGPointWrapper {
-		    var point : CGPoint { get }
-		}
-		
-		extension CGPoint : CGPointWrapper {
-		    var point : CGPoint {
-		        return self
-		    }
-		}
-		
-		extension Array where Element : CGPointWrapper {
-		    var path : CGPathRef {
-		        let bezier = UIBezierPath()
-		        
-		        if self.count > 0 {
-		            bezier.moveToPoint(self[0].point)
-		        }
-		        
-		        for point in self{
-		            bezier.addLineToPoint(point.point)
-		        }
-		        
-		        return bezier.CGPath
-		    }
-		}
-		~~~
-		
-		上面这个例子中,我们限制了Array的类型参数`Element`必须遵循`CGPointWrapper`协议。因为类型参数的约束目前只能限制是继承于某个类或是遵循某个协议,而`CGPoint`是值类型,因此我们用`CGPointWrapper`协议替代,用于提供一个`point`属性以供使用。然后我们在扩展中取出`CGPoint`,直接合成`CGPathRef`,非常的优雅方便,并且是类型安全的。
-		
-		在Swift4，我们有可能可以约束类型参数或关联类型为具体的某个类型。（详情参考[concrete-same-type-requirements](https://github.com/apple/swift/blob/master/docs/GenericsManifesto.md#concrete-same-type-requirements)）
-		这样子上面的扩展就可以简化为：
-		
-		~~~swift
 		extension Array where Element == CGPoint {
-			    var path : CGPathRef {
+			    var path : CGPath {
 		        let bezier = UIBezierPath()
 		        
 		        if self.count > 0 {
@@ -509,10 +476,12 @@ associatedtype ItemType = String
 		            bezier.addLineToPoint(point)
 		        }
 		        
-		        return bezier.CGPath
+		        return bezier.cgPath
 		    }
 		}
 		~~~
+		
+		能够直接将CGFloat的数组转换为CGPathRef
 		
 		
 		
@@ -550,6 +519,7 @@ associatedtype ItemType = String
 
 [swift-type-constrained-extensions-express-yourself](http://www.cimgf.com/2015/12/14/swift-type-constrained-extensions-express-yourself/)
 
+[Concrete same-type requirements](https://github.com/apple/swift/blob/master/docs/GenericsManifesto.md#concrete-same-type-requirements)
 
 
 
@@ -557,6 +527,8 @@ associatedtype ItemType = String
 <h2 id="3">3.Protocol Oriented Programming</h2>
 
 protocol-oriented programming 的核心在于`用组合替代继承`(也就是面向对象编程准则：**prefer composition over inheritance**)。
+
+个人的理解，protocol-oriented programming 的核心就是使用协议代替了类来组织代码，因为类一般是相对明确的概念，而协议囊括的概念更庞大。几时用POP，几时用类。我觉得可以从你想要组织的概念入手，像`CollectionType`在Swift中便是以协议组织的，因为这样更灵活。如果用类来组织的话，继承链会很长，不够灵活。但是如果你开发的是一个非常明确的概念，比如说一个UI控件，那这个时候，类会是更好的组织方式。我觉得没有非常严格意义能够划分用协议或是类来组织代码，这取决于我们的实际需求。
 
 初次学习面向协议编程，不要感到面对得是一个新的庞大的编程概念和体系，我们直接先从语法入手。看看面向协议编程在代码里面究竟是个什么东西。
 
@@ -624,6 +596,22 @@ public func map<T>(@noescape transform: (Self.Generator.Element) throws -> T) re
 
 [Practical Protocol-Oriented-Programming](https://realm.io/news/appbuilders-natasha-muraschev-practical-protocol-oriented-programming/)
 
+[Protocols I: "Start With a Protocol," He Said](http://robnapier.net/start-with-a-protocol)
+
+>   So fundamentally for me, protocol oriented programming is basically generic programming  POP 本质上也是是泛型编程。 [Dave Abrahams 在一个Podcast 谈到。 23分开始](https://www.swiftbysundell.com/podcast/71/)
+
+> But we meant something very specific by this. It was protocols that had the capabilities that come with associated types
+
+> The other aspect, I guess, of protocol oriented programming that I left out was how it enables polymorphism with value semantics
+
+>  for me, a protocol is something that you discover. It's not something you invent. In other words, you have a bunch of concrete code. And you find the commonality in that code. And that defines the protocol 
+
+>  statical, polymorphic, and dynamically polymorphic. It's only when you really need dynamic polymorphism that you need type erasure.
+> 
+>  you really want to avoid type erasure if you can
+> 
+> o instead of forbidding mutation, what if we forbid sharing? That was the inside I got from sean? And Alex, what happens if instead of getting rid of mutation, let's get rid of sharing
+
 <h2 id="4">4.函数式编程（Functional Programming）</h2>
 
 什么是函数式编程？
@@ -632,37 +620,58 @@ public func map<T>(@noescape transform: (Self.Generator.Element) throws -> T) re
 
 - 
 
-事实上，个人觉得很难给函数式编程下一个明确的定义。
+事实上，个人觉得很难给函数式编程下一个非常准确清晰的定义。
 
-但是我们可以从另外一个角度出发，就是函数式编程通过什么样的语法特性体现出来，怎么样的编程范式和代码是函数式的来体会和学习函数式编程。避免空谈概念, Let's get our hands dirty.
+但是我们可以从另外的角度出发，那就是函数式编程需要一门编程语言具备什么样的语法特性。怎么样的代码是函数式的风格的来体会和学习函数式编程。避免空谈概念, Let's get our hands dirty.
 
-高阶函数
 
-reduce,filter,map,flapmap,forEach,zip
+### 语法特性
 
-Map:
+从语法上，函数式编程往往需要这样的语法特性：
+
+`first class functions`
+
+直译过来就是函数作为一等公民。也就是说，函数能够和普通的类型，比如`Int`一样：
+
+- 被存储
+- 作为函数参数
+- 作为函数返回值
+
+
+### 函数式风格的代码
+
+### 声明式的代码
+
+当我们有了这个语法特性之后，之前我们一些命令式编程（`Imperative Programming`）风格的代码，能够写成更清晰的声明式(`Declarative`)代码。	
+
+#### 减少使用循环
+
+更清晰的代码，意味着更少直接的循环（`raw loop`），也即尽可能地少用 `for`,`while` 来组织代码。而是抽成一个方法来实现。我们可以借助 `reduce`, `filter`, `map`, `flapmap`, `forEach`这些高阶函数来编写更清晰的代码。
+
+##### Map:
 
 ~~~swift
 //循环版本：
-  var bubbleModels = [BubbleModel]()
-   for bubble in bubbles {
-   		bubbleModels.append(bubble.bubbleModel)
-   }
-   return bubbleModels
+var bubbleModels = [BubbleModel]()
+for bubble in bubbles {
+	bubbleModels.append(bubble.bubbleModel)
+}
+return bubbleModels
+   
 //高阶函数：        
 bubbleModels = bubbles.map({ $0.bubbleModel })
 ~~~
 
-FlatMap:
+##### FlatMap:
 
 ~~~swift
 //循环版本：
-  var bubbles = [BubbleView]()
-   for view in self.subviews {
-	   	if let bubbleView = view as? BubbleView {
-	   		bubbles.append(bubbleView)
-	   	}
+var bubbles = [BubbleView]()
+for view in self.subviews {
+   	if let bubbleView = view as? BubbleView {
+   		bubbles.append(bubbleView)
    	}
+}
 
 //高阶函数：
 bubbles = self.subviews.flatMap({ $0 as? BubbleView })
@@ -708,8 +717,56 @@ zip: 同时对两个sequnece进行操作
 ~~~
 
 
+### 无副作用
+
+函数式编程的另外一个代码风格，就是希望写没有副作用的代码。一个没有副作用的函数，我们称它为纯函数 （`Pure Function`)       
+
+纯函数具备这样的特点：
+
+1. 同样的输入，永远是同样的输出。
+2. 不会对在函数以外的任何作用域产生影响。 
+
+具体到代码和语法角度：
+
+1. 不使用外部变量，函数内的Static 变量，只依赖输入的参数 和临时变量。
+2. 不对输入参数做任何修改。
+3. 不使用任何 非 Pure function的方法。比如系统 I/O 的API, 打 log， Date.now() 或者 Math.random()
+
+~~~swift
+//非纯函数
+
+
+//纯函数
+
+~~~
+
+
+这样做的好处，机
+
+
+
+### 流水线处理（Pipeling）
+
+
 参考：
 
 Swift源代码：
 [map](https://github.com/apple/swift/blob/master/stdlib/public/core/Collection.swift)
 [reduce,flatmap](https://github.com/apple/swift/blob/master/stdlib/public/core/SequenceAlgorithms.swift.gyb)
+
+[a practical introduction to functional programming](http://harlankellaway.com/blog/2015/08/10/swift-functional-programming-intro)
+
+[函数式编程](https://coolshell.cn/articles/10822.html)
+
+
+<h2 id="5"> 5.子编程范式</h2>
+
+### 元编程，DSL, 声明式（declarative programming）
+
+### 响应式编程 (Reactive Programming )
+
+
+[漫谈响应式编程](http://codebay.cn/post/2811.html)
+
+
+
